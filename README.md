@@ -10,7 +10,7 @@ The `mem` stands for memory. It is a simple tool to manage the storage of data i
 
 # Usage
 This is how you can use the mem package in your next Go project.
-```
+```go
 package main
 
 import (
