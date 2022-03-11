@@ -15,7 +15,7 @@ const (
 
 // ScheduledCleanCached runs a goroutine that cleans the expired data
 type ScheduledCleanCached struct {
-	SchedType int // every second, minute, hour
+	SchedType int // EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR
 	Interval  int
 }
 
@@ -119,6 +119,7 @@ func CleanExpired(c *Cache) {
 }
 
 // NewScheduledCleanCached returns a new ScheduledCleanCached
+// Options for the interval types: EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR
 func NewScheduledCleanCached(schedType int, interval int) *ScheduledCleanCached {
 	return &ScheduledCleanCached{
 		SchedType: schedType,

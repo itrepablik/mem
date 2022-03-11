@@ -21,12 +21,10 @@ import (
 )
 
 func main() {
-	// Create a new cache instance
+	// To create a new cache instance, use this method
 	c := mem.NewCache()
 
-	// *********************************************
-	// Set a new data in the cache
-	// *********************************************
+	// Set a new data in the cache with a key and a value and a expiration time
 	m := &mem.MemData{
 		Key:    "key",
 		Value:  []byte("value"),
@@ -38,9 +36,7 @@ func main() {
 		return
 	}
 
-	// *********************************************
-	// Get the data from the cache
-	// *********************************************
+	// Use this method to get the data from the cache by key
 	v, ok := c.Get("key")
 	if !ok {
 		fmt.Printf("Key not found")
@@ -48,14 +44,13 @@ func main() {
 	}
 	fmt.Println("Get:", string(v), ok)
 
-	// *********************************************
-	// Replace the data in the cache
-	// *********************************************
+	// Replace the data in the cache with a new one using the same key, but with a new value
 	m = &mem.MemData{
 		Key:    "key",
 		Value:  []byte("new value"),
 		Expire: time.Now().Add(time.Second * 3).Unix(),
 	}
+
 	err = c.Replace("key", m)
 	if err != nil {
 		fmt.Printf("Error replacing data: %s", err)
@@ -69,9 +64,7 @@ func main() {
 	}
 	fmt.Println("Get cached data after replaced event:", string(v), ok)
 
-	// *********************************************
-	// Delete the data in the cache
-	// *********************************************
+	// This is how to delete the data from the cache using the key
 	c.Delete("key")
 
 	v, ok = c.Get("key")
@@ -81,20 +74,15 @@ func main() {
 	}
 	fmt.Println("Get cached data after the delete event:", string(v), ok)
 
-	// *********************************************
-	// ClearAll the data in the cache manually
-	// *********************************************
+	// Use this method to clear all the data in the cache manually regardless of the expiration time
 	c.ClearAll()
 
-	// *********************************************
-	// CleanExpired clear all expired data in the cache manually
-	// *********************************************
+	// To clean all the expired cached data in the cache manually you can use this method
 	mem.CleanExpired(c)
 
-	// *********************************************
-	// Auto clean expired cached data
-	// *********************************************
-	sched := mem.NewScheduledCleanCached(0, 3)
+	// Use this method to trigger the auto clean expired cached data, this is ideal to run in main function
+    // Inverval options: EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR
+	sched := mem.NewScheduledCleanCached(mem.EVERY_SECOND, 3)
 	mem.RunAutoCleanExpiredCached(c, sched)
 
 	// Stop ending the program
