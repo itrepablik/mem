@@ -81,7 +81,7 @@ func main() {
 	mem.CleanExpired(c)
 
 	// Use this method to trigger the auto clean expired cached data, this is ideal to run in main function
-    // Inverval options: EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR
+    	// Inverval options: EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR
 	sched := mem.NewScheduledCleanCached(mem.EVERY_SECOND, 3)
 	mem.RunAutoCleanExpiredCached(c, sched)
 
