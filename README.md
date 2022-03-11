@@ -1,7 +1,7 @@
 ![mem package](https://user-images.githubusercontent.com/58651329/155666747-72a17ca0-57a9-4021-8cc9-1d37019634fc.png)
 
 # Installation
-```
+```go
 go get -u github.com/itrepablik/mem
 ```
 
