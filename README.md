@@ -80,14 +80,61 @@ func main() {
 	// To clean all the expired cached data in the cache manually you can use this method
 	mem.CleanExpired(c)
 
-	// Use this method to trigger the auto clean expired cached data, this is ideal to run in main function
-    	// Inverval options: EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR
-	sched := mem.NewScheduledCleanCached(mem.EVERY_SECOND, 3)
-	mem.RunAutoCleanExpiredCached(c, sched)
+	// Initialize a new cleaner, e.g mem.WithIntervalValue(mem.EVERY_SECOND, 3)
+	// the interval options are: EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR
+	// WithStartTime option is not allowed for this mem.FREQUENTLY cleaner type
+	cleaner, err := mem.NewCleaner(mem.FREQUENTLY, mem.WithIntervalValue(mem.EVERY_SECOND, 3))
+	if err != nil {
+		fmt.Printf("Error creating a new cleaner: %s", err)
+		return
+	}
+	cleaner.Run(c)
 
 	// Stop ending the program
 	fmt.Fscanln(os.Stdin)
 }
+```
+# Examples to run the cleaner preferrably inside your main.go file.
+For the Frequently cleaner example, the following options are available:
+The interval options are: EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR
+Use the WithStartTime option to set the start time of the cleaner.
+```go
+	cleaner, err := mem.NewCleaner(mem.FREQUENTLY, mem.WithIntervalValue(mem.EVERY_SECOND, 3))
+	if err != nil {
+		fmt.Printf("Error creating a new cleaner: %s", err)
+		return
+	}
+	cleaner.Run(c)
+```
+
+For the Daily cleaner example, the following day will be the first time the cleaner will run. It requires the WithStartTime option.
+```go
+	cleaner, err := mem.NewCleaner(mem.DAILY, mem.WithStartTime("10:30"))
+	if err != nil {
+		fmt.Printf("Error creating a new cleaner: %s", err)
+		return
+	}
+	cleaner.Run(c)
+```
+
+Weekly cleaner example, the following week will be the first time the cleaner will run. It requires the WithWeekDay and WithStartTime options.
+```go
+	cleaner, err := mem.NewCleaner(mem.WEEKLY, mem.WithWeekDay(mem.FRIDAY), mem.WithStartTime("10:30"))
+	if err != nil {
+		fmt.Printf("Error creating a new cleaner: %s", err)
+		return
+	}
+	cleaner.Run(c)
+```
+
+Monthly cleaner example, the following month will be the first time the cleaner will run. It requires the WithDayOfMonth and WithStartTime options.
+```go
+	cleaner, err := mem.NewCleaner(mem.MONTHLY, mem.WithDayOfMonth(15), mem.WithStartTime("10:30"))
+	if err != nil {
+		fmt.Printf("Error creating a new cleaner: %s", err)
+		return
+	}
+	cleaner.Run(c)
 ```
 
 # Subscribe to Maharlikans Code Youtube Channel:
