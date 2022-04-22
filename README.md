@@ -81,7 +81,7 @@ func main() {
 	// To clean all the expired cached data in the cache manually you can use this method
 	mem.CleanExpired(c)
 
-	// Use gorouting to start the mem cleaner routine
+	// Use goroutine to start the mem cleaner routine
 	// Initialize a new cleaner, e.g mem.WithIntervalValue(mem.EVERY_SECOND, 3)
 	// the interval options are: EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR
 	// WithStartTime option is not allowed for this mem.FREQUENTLY cleaner type
