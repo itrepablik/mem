@@ -8,6 +8,7 @@ import (
 
 func initCache() (*Cache, *MemData) {
 	c := NewCache()
+	Client(c)
 	expireOn := time.Now().Add(time.Second * 3).Unix()
 
 	// Use the MemData struct to set the data
@@ -21,12 +22,12 @@ func initCache() (*Cache, *MemData) {
 
 func setCache(c *Cache, m *MemData) error {
 	// Set the new data in the cache
-	err := c.Set(m)
+	err := Set(m)
 	if err != nil {
 		return fmt.Errorf("Error setting data: %s", err)
 	}
 
-	if v, ok := c.Get("key"); !ok || string(v) != "value" {
+	if v, ok := Get("key"); !ok || string(v) != "value" {
 		return fmt.Errorf("Set failed")
 	}
 	return nil
@@ -51,7 +52,7 @@ func TestGet(t *testing.T) {
 	}
 
 	// Get the data from the cache
-	v, ok := c.Get("key")
+	v, ok := Get("key")
 	if !ok || string(v) != "value" {
 		t.Error("Get failed")
 	}
@@ -68,10 +69,10 @@ func TestDelete(t *testing.T) {
 	}
 
 	// Delete the data from the cache
-	c.Delete("key")
+	Delete("key")
 
 	// Get the data from the cache
-	v, ok := c.Get("key")
+	v, ok := Get("key")
 	if ok || v != nil {
 		t.Error("Delete failed")
 	}
@@ -89,13 +90,13 @@ func TestReplace(t *testing.T) {
 
 	// Replace the data in the cache
 	m.Value = []byte("new value")
-	err = c.Replace("key", m)
+	err = Replace("key", m)
 	if err != nil {
 		t.Error(err)
 	}
 
 	// Get the data from the cache
-	v, ok := c.Get("key")
+	v, ok := Get("key")
 	if !ok || string(v) != "new value" {
 		t.Error("Replace failed")
 	}
@@ -112,10 +113,10 @@ func TestClear(t *testing.T) {
 	}
 
 	// Clear all the cache
-	c.ClearAll()
+	ClearAll()
 
 	// Get the data from the cache
-	v, ok := c.Get("key")
+	v, ok := Get("key")
 	if ok || v != nil {
 		t.Error("Clear failed")
 	}

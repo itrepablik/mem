@@ -77,6 +77,18 @@ type CleanerOption interface {
 	Error() error
 }
 
+// Command returns the command to run the cleaner
+type Command interface {
+	Run(h *Cache)
+	Client() *Cache
+}
+
+// Client returns the mem cache client
+func Client(m *Cache) *Cache {
+	c = m
+	return c
+}
+
 // IntervalOpt returns the interval for the cleaner
 func (c *CleanerSchedule) IntervalOpt() int {
 	return c.Interval
@@ -259,11 +271,6 @@ func NewCleaner(scheduleType int, opts ...CleanerOption) (*Cleaner, error) {
 	return c, nil
 }
 
-// Command returns the command to run the cleaner
-type Command interface {
-	Run(h *Cache)
-}
-
 // ChannelTS is a channel timestamp
 var ChannelTS = make(chan bool, 1)
 
@@ -300,7 +307,7 @@ func execRunner(c *Cleaner, h *Cache) {
 	for _, e := range GetAllCleanerSchedules() {
 		for _, s := range e {
 			// Check if due for execution
-			if s.NextRun == time.Now().Unix() {
+			if s.NextRun == time.Now().Local().Unix() {
 				c.UpdateNextRun(s.TaskName) // Update the next run time for the task
 				CleanExpired(h)
 			}
@@ -322,13 +329,13 @@ func (c *Cleaner) UpdateNextRun(taskName string) {
 
 		switch c.Schedule.Interval {
 		case EVERY_SECOND:
-			c.NextRun = time.Now().Add(time.Second * time.Duration(c.Schedule.IntervalValue)).Unix()
+			c.NextRun = time.Now().Local().Add(time.Second * time.Duration(c.Schedule.IntervalValue)).Unix()
 
 		case EVERY_MINUTE:
-			c.NextRun = time.Now().Add(time.Minute * time.Duration(c.Schedule.IntervalValue)).Unix()
+			c.NextRun = time.Now().Local().Add(time.Minute * time.Duration(c.Schedule.IntervalValue)).Unix()
 
 		case EVERY_HOUR:
-			c.NextRun = time.Now().Add(time.Hour * time.Duration(c.Schedule.IntervalValue)).Unix()
+			c.NextRun = time.Now().Local().Add(time.Hour * time.Duration(c.Schedule.IntervalValue)).Unix()
 		}
 
 	case DAILY:
@@ -336,7 +343,7 @@ func (c *Cleaner) UpdateNextRun(taskName string) {
 		startTimeHour, startTimeMinute := GetTime(c.Schedule.StartTime)
 
 		// Start the cleaner for the following day with start time
-		c.NextRun = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day()+1, startTimeHour, startTimeMinute, 0, 0, time.Local).Unix()
+		c.NextRun = time.Date(time.Now().Local().Year(), time.Now().Local().Month(), time.Now().Local().Day()+1, startTimeHour, startTimeMinute, 0, 0, time.Local).Unix()
 
 	case WEEKLY:
 		// Get the start time hour and minute
@@ -344,7 +351,7 @@ func (c *Cleaner) UpdateNextRun(taskName string) {
 		dayOfWeek := c.Schedule.Interval - 1
 
 		// Find the next dayOfWeek in the future from the current day
-		nextDayOfWeek := time.Now().AddDate(0, 0, (int(dayOfWeek) + int(time.Now().Weekday()) - 1))
+		nextDayOfWeek := time.Now().Local().AddDate(0, 0, (int(dayOfWeek) + int(time.Now().Local().Weekday()) - 1))
 		c.NextRun = time.Date(nextDayOfWeek.Year(), nextDayOfWeek.Month(), nextDayOfWeek.Day(), startTimeHour, startTimeMinute, 0, 0, time.Local).Unix()
 
 	case MONTHLY:
@@ -352,10 +359,10 @@ func (c *Cleaner) UpdateNextRun(taskName string) {
 		startTimeHour, startTimeMinute := GetTime(c.Schedule.StartTime)
 
 		// Find the next dayOfMonth in the future from the current day
-		c.NextRun = time.Date(time.Now().Year(), time.Now().Month()+1, c.Schedule.Interval, startTimeHour, startTimeMinute, 0, 0, time.Local).Unix()
+		c.NextRun = time.Date(time.Now().Local().Year(), time.Now().Local().Month()+1, c.Schedule.Interval, startTimeHour, startTimeMinute, 0, 0, time.Local).Unix()
 	}
 
-	c.Remarks = fmt.Sprintf("%s ran successfully on %s", taskName, time.Now().Format(DT_FORMAT))
+	c.Remarks = fmt.Sprintf("%s ran successfully on %s", taskName, time.Now().Local().Format(DT_FORMAT))
 
 	// Update cleaner TS with the new next run time
 	UpdateCleaner(c, taskName)
@@ -430,11 +437,11 @@ func (c *Cleaner) CleanFrequently() {
 
 	switch c.Schedule.Interval {
 	case EVERY_SECOND:
-		c.NextRun = time.Now().Add(time.Second * time.Duration(c.Schedule.IntervalValue)).Unix()
+		c.NextRun = time.Now().Local().Add(time.Second * time.Duration(c.Schedule.IntervalValue)).Unix()
 	case EVERY_MINUTE:
-		c.NextRun = time.Now().Add(time.Minute * time.Duration(c.Schedule.IntervalValue)).Unix()
+		c.NextRun = time.Now().Local().Add(time.Minute * time.Duration(c.Schedule.IntervalValue)).Unix()
 	case EVERY_HOUR:
-		c.NextRun = time.Now().Add(time.Hour * time.Duration(c.Schedule.IntervalValue)).Unix()
+		c.NextRun = time.Now().Local().Add(time.Hour * time.Duration(c.Schedule.IntervalValue)).Unix()
 	}
 }
 
@@ -447,8 +454,8 @@ func (c *Cleaner) CleanDaily() {
 	startTimeHour, startTimeMinute := GetTime(c.Schedule.StartTime)
 
 	// Start the cleaner for the following day with start time
-	c.NextRun = time.Date(time.Now().Year(), time.Now().Month(),
-		time.Now().Day()+1, startTimeHour, startTimeMinute, 0, 0, time.Local).Unix()
+	c.NextRun = time.Date(time.Now().Local().Year(), time.Now().Local().Month(),
+		time.Now().Local().Day()+1, startTimeHour, startTimeMinute, 0, 0, time.Local).Unix()
 }
 
 // CleanWeekly runs the cleaner weekly
@@ -461,7 +468,7 @@ func (c *Cleaner) CleanWeekly() {
 	dayOfWeek := c.Schedule.Interval - 1
 
 	// Find the next dayOfWeek in the future from the current day
-	nextDayOfWeek := time.Now().AddDate(0, 0, (int(dayOfWeek) + int(time.Now().Weekday()) - 1))
+	nextDayOfWeek := time.Now().Local().AddDate(0, 0, (int(dayOfWeek) + int(time.Now().Local().Weekday()) - 1))
 	c.NextRun = time.Date(nextDayOfWeek.Year(), nextDayOfWeek.Month(),
 		nextDayOfWeek.Day(), startTimeHour, startTimeMinute, 0, 0, time.Local).Unix()
 }
@@ -475,7 +482,7 @@ func (c *Cleaner) CleanMonthly() {
 	startTimeHour, startTimeMinute := GetTime(c.Schedule.StartTime)
 
 	// Find the next dayOfMonth in the future from the current day
-	c.NextRun = time.Date(time.Now().Year(), time.Now().Month()+1,
+	c.NextRun = time.Date(time.Now().Local().Year(), time.Now().Local().Month()+1,
 		c.Schedule.Interval, startTimeHour, startTimeMinute, 0, 0, time.Local).Unix()
 }
 

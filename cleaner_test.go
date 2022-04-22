@@ -18,6 +18,7 @@ func TestGetTime(t *testing.T) {
 func TestNewCleaner(t *testing.T) {
 	// To create a new cache instance, use this method
 	c := NewCache()
+	Client(c)
 
 	// Set a new data in the cache with a key and a value and a expiration time
 	m := &MemData{
@@ -25,7 +26,7 @@ func TestNewCleaner(t *testing.T) {
 		Value:  []byte("value"),
 		Expire: time.Now().Add(time.Second * 3).Unix(),
 	}
-	err := c.Set(m)
+	err := Set(m)
 	if err != nil {
 		t.Errorf("Error setting data: %s", err)
 	}

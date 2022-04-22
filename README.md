@@ -23,6 +23,7 @@ import (
 func main() {
 	// To create a new cache instance, use this method
 	c := mem.NewCache()
+	mem.Client(c)
 
 	// Set a new data in the cache with a key and a value and a expiration time
 	m := &mem.MemData{
@@ -30,14 +31,14 @@ func main() {
 		Value:  []byte("value"),
 		Expire: time.Now().Add(time.Second * 3).Unix(),
 	}
-	err := c.Set(m)
+	err := mem.Set(m)
 	if err != nil {
 		fmt.Printf("Error setting data: %s", err)
 		return
 	}
 
 	// Use this method to get the data from the cache by key
-	v, ok := c.Get("key")
+	v, ok := mem.Get("key")
 	if !ok {
 		fmt.Printf("Key not found")
 		return
@@ -51,13 +52,13 @@ func main() {
 		Expire: time.Now().Add(time.Second * 3).Unix(),
 	}
 
-	err = c.Replace("key", m)
+	err = mem.Replace("key", m)
 	if err != nil {
 		fmt.Printf("Error replacing data: %s", err)
 		return
 	}
 
-	v, ok = c.Get("key")
+	v, ok = mem.Get("key")
 	if !ok {
 		fmt.Printf("Key not found")
 		return
@@ -65,9 +66,9 @@ func main() {
 	fmt.Println("Get cached data after replaced event:", string(v), ok)
 
 	// This is how to delete the data from the cache using the key
-	c.Delete("key")
+	mem.Delete("key")
 
-	v, ok = c.Get("key")
+	v, ok = mem.Get("key")
 	if !ok {
 		fmt.Printf("Key not found, already deleted!")
 		return
@@ -75,21 +76,24 @@ func main() {
 	fmt.Println("Get cached data after the delete event:", string(v), ok)
 
 	// Use this method to clear all the data in the cache manually regardless of the expiration time
-	c.ClearAll()
+	mem.ClearAll()
 
 	// To clean all the expired cached data in the cache manually you can use this method
 	mem.CleanExpired(c)
 
+	// Use gorouting to start the mem cleaner routine
 	// Initialize a new cleaner, e.g mem.WithIntervalValue(mem.EVERY_SECOND, 3)
 	// the interval options are: EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR
 	// WithStartTime option is not allowed for this mem.FREQUENTLY cleaner type
-	cleaner, err := mem.NewCleaner(mem.FREQUENTLY, mem.WithIntervalValue(mem.EVERY_SECOND, 3))
-	if err != nil {
-		fmt.Printf("Error creating a new cleaner: %s", err)
-		return
-	}
-	cleaner.Run(c)
-
+	go func() {
+		cleaner, err := mem.NewCleaner(mem.FREQUENTLY, mem.WithIntervalValue(mem.EVERY_SECOND, 3))
+		if err != nil {
+			fmt.Printf("Error creating a new cleaner: %s", err)
+			return
+		}
+		cleaner.Run(c)
+	}()
+	
 	// Stop ending the program
 	fmt.Fscanln(os.Stdin)
 }

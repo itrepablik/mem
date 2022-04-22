@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var c *Cache
+
 // MemData is a struct that holds the data for the memory
 type MemData struct {
 	Key     string // key for the data
@@ -19,7 +21,7 @@ func (m *MemData) IsExpired() bool {
 	if m.Expire == 0 {
 		return false
 	}
-	return m.Expire < time.Now().Unix()
+	return m.Expire < time.Now().Local().Unix()
 }
 
 // Cache is a struct that holds the data for the cache
@@ -37,7 +39,7 @@ func NewCache() *Cache {
 }
 
 // Set sets the data in the cache
-func (c *Cache) Set(m *MemData) error {
+func Set(m *MemData) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -50,13 +52,13 @@ func (c *Cache) Set(m *MemData) error {
 		Key:     m.Key,
 		Value:   m.Value,
 		Expire:  m.Expire,
-		Created: time.Now().Unix(),
+		Created: time.Now().Local().Unix(),
 	}
 	return nil
 }
 
 // Get gets the data from the cache
-func (c *Cache) Get(key string) ([]byte, bool) {
+func Get(key string) ([]byte, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -67,7 +69,7 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 }
 
 // Replace replaces the data in the cache with the new data by the key
-func (c *Cache) Replace(key string, m *MemData) error {
+func Replace(key string, m *MemData) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -84,14 +86,14 @@ func (c *Cache) Replace(key string, m *MemData) error {
 }
 
 // Delete deletes the data from the cache
-func (c *Cache) Delete(key string) {
+func Delete(key string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	delete(c.data, key)
 }
 
 // ClearAll clears the cache
-func (c *Cache) ClearAll() {
+func ClearAll() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.data = make(map[string]*MemData)
