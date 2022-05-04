@@ -126,3 +126,8 @@ func ExpiryTimeOpt(timeInterval int, timeIntervalValue int) int64 {
 		return time.Now().Local().Add(time.Minute * 30).Unix()
 	}
 }
+
+// DefaultExpiryTimeOpt is an option for the default expiry time
+func DefaultExpiryTimeOpt() int64 {
+	return time.Now().Local().Add(time.Minute * 30).Unix()
+}
