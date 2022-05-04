@@ -110,3 +110,19 @@ func CleanExpired(c *Cache) {
 		}
 	}
 }
+
+// ExpiryTimeOpt is an option for the expiry time
+func ExpiryTimeOpt(timeInterval int, timeIntervalValue int) int64 {
+	// Set default time interval value to 1
+	if timeIntervalValue <= 0 {
+		timeIntervalValue = 1
+	}
+
+	// Check if timeInterval is valid
+	switch timeInterval {
+	case EVERY_SECOND, EVERY_MINUTE, EVERY_HOUR:
+		return time.Now().Local().Add(time.Duration(timeInterval) * time.Duration(timeIntervalValue)).Unix()
+	default:
+		return time.Now().Local().Add(time.Minute * 30).Unix()
+	}
+}
